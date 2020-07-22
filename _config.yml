@@ -98,7 +98,7 @@ service-worker: true
 # Friends
 friends: [
     {
-        title: "wxk1997",
-        href: "https://pullp.github.io"
+        title: "惊蛰",
+        href: "https://250.ac.cn"
     }
 ]
