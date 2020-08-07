@@ -8,5 +8,13 @@ header-img: img/default-bg.png
 catalog: true
 tags:
     - hello
-    - 你好
 ---
+
+# 本地预览
+
+命令行执行
+```
+jekyll serve --host 0.0.0.0
+```
+
+浏览器访问 `4000` 端口
