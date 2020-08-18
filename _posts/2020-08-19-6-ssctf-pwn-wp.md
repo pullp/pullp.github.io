@@ -156,4 +156,6 @@ io.sendline(payload)
 
 # 参考
 
-1. [参考题解](https://github.com/theori-io/ctf/blob/master/SSTF%20CTF%202020%20Write%20Up%20-%20The%20Duck.pdf)
+1. [比赛平台](https://playground.sstf.site/challenges)
+2. [参考题解](https://github.com/theori-io/ctf/blob/master/SSTF%20CTF%202020%20Write%20Up%20-%20The%20Duck.pdf)
+3. [ctf-time](https://ctftime.org/event/1107)
