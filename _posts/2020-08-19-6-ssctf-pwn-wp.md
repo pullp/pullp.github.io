@@ -1,8 +1,8 @@
 ---
 layout:     post
 title:      2020 ssctf(Hacker's Playground) wp
-subtitle:   T express, Eat the pie
-date:       2020-08-10
+subtitle:   T-express, Eat-the-pie
+date:       2020-08-19
 author:     wxk1997
 header-img: img/pwn-bg.png
 catalog: true
