@@ -1,8 +1,8 @@
 ---
 layout:     post
-title:      gdb commands 自动化操作
-subtitle:   gdb commands
-date:       2020-08-16
+title:      gdb 自动化操作
+subtitle:   gdb-commands, python
+date:       2020-09-05
 author:     wxk1997
 header-img: img/pwn-bg.png
 catalog: true
@@ -10,6 +10,7 @@ tags:
     - ctf
     - pwn
     - gdb
+    - python
 ---
 
 # 前言
