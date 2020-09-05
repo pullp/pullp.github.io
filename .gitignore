@@ -35,3 +35,5 @@ Temporary Items
 _site
 
 .jekyll-cache/*
+
+local/*
