@@ -13,6 +13,14 @@ tags:
 
 # 前言
 
+## 更新历史
+
+| 更新时间  | 更新内容  |
+|  ----     | ----      |
+| 2020-08-13 | 初稿     |
+| 2020-10-14 | 更新清华源相关操作(感谢航神指出问题orz) |
+
+
 python这门语言的灵活性让人写起来很快乐, 但是不同版本之间的兼容性较差以及包管理问题经常会导致一些非常烦人的问题, 所以在一台机器上安装多个版本的python是一种很常见的需求. 
 
 提供这种功能的工具有很多, 比如 `virtualen` 啥的, 但是用起来比较麻烦, 直到最近发现 anaconda 这个工具才算是终于找到一个舒服的解决方案了. 这个工具不但功能很强大, 而且用起来也很方便. 本文一则是介绍一下这个工具, 二则是记录一下这个工具常用操作, 以备不时之需. (顺便水一篇博客hhh)
@@ -64,18 +72,15 @@ proxy_servers:
 
 ## 添加清华源
 
-```
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/bioconda
-conda config --set show_channel_urls yes
-```
+参考[官方使用帮助](https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/)
 
 ## 更新conda
 
 ```
 conda update conda
 ```
+
+更多操作请参考`conda cheatsheet`.
 
 # 结语
 
