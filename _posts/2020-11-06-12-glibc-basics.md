@@ -17,6 +17,7 @@ tags:
 | 更新时间  | 更新内容  |
 |  ----     | ----      |
 | 2020-11-06 | 初稿     |
+| 2020-11-07 | 修复代码换行问题     |
 
 --- 
 
@@ -79,6 +80,7 @@ LD_PRELOAD=./libc.so ./ld.so ./program
 
 ```python
 #coding:utf-8
+
 from pwn import *
 
 io = process("./program", env={"LD_PRELOAD":"./libc.so"})
@@ -135,8 +137,11 @@ $ sudo ln -s /home/wxk/hitctf-pwn/usr/glibc-compat /usr/glibc-compat # ld.so 会
 test_glibc.c 内容如下
 ```c
 #define _GNU_SOURCE
+
 #include <stdio.h>
+
 #include <stdlib.h>
+
 #include <gnu/libc-version.h>
 
 int main(){
