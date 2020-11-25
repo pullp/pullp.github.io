@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前言动规类型的题目暂时告一段落了, 现在开始刷字符串相关的题目. 今天做的题是 131. 分割回文串 很自然的想到了回溯算法, 也成功通过了测试. 做完后在看题解的过程中发现针对回文串有一个manacher算法. 具有O(n)的时间和空间复杂度. 比我O(n^2)的解法不知道高到哪里去了. 题解中还列出了四个回文串相关的题目, 于是乎我就学习了一下这个manacher算法, 把剩下的三题也给做了.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="回文串和manacher算法">
+<meta property="og:url" content="http://example.com/2020/08/12/2020-08-12-4-manacher/index.html">
+<meta property="og:site_name" content="wxk1997&#39;s blog">
+<meta property="og:description" content="前言动规类型的题目暂时告一段落了, 现在开始刷字符串相关的题目. 今天做的题是 131. 分割回文串 很自然的想到了回溯算法, 也成功通过了测试. 做完后在看题解的过程中发现针对回文串有一个manacher算法. 具有O(n)的时间和空间复杂度. 比我O(n^2)的解法不知道高到哪里去了. 题解中还列出了四个回文串相关的题目, 于是乎我就学习了一下这个manacher算法, 把剩下的三题也给做了.">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-08-12T16:50:04.440Z">
+<meta property="article:author" content="wxk1997">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="leetcode">
+<meta property="article:tag" content="rust">
+<meta property="article:tag" content="字符串">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2020/08/12/2020-08-12-4-manacher/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>回文串和manacher算法 | wxk1997's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">wxk1997's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">苦中作乐</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/08/12/2020-08-12-4-manacher/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/20255635">
+      <meta itemprop="name" content="wxk1997">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wxk1997's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          回文串和manacher算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-12 00:00:00" itemprop="dateCreated datePublished" datetime="2020-08-12T00:00:00+08:00">2020-08-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-13 00:50:04" itemprop="dateModified" datetime="2020-08-13T00:50:04+08:00">2020-08-13</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>动规类型的题目暂时告一段落了, 现在开始刷字符串相关的题目. 今天做的题是 <code>131. 分割回文串</code> 很自然的想到了回溯算法, 也成功通过了测试. 做完后在看题解的过程中发现针对回文串有一个manacher算法. 具有O(n)的时间和空间复杂度. 比我O(n^2)的解法不知道高到哪里去了. 题解中还列出了四个回文串相关的题目, 于是乎我就学习了一下这个manacher算法, 把剩下的三题也给做了. 在此记录一下.</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="manacher算法"><a href="#manacher算法" class="headerlink" title="manacher算法"></a>manacher算法</h2><p>关于回文串的定义就不再细说, 简单地说就是从右往左和从左往右读都一样. 而manacher算法可以实现这样一个功能: 以O(n)的时间复杂度计算整个字符串中以任意字符为中心的最长回文子串的长度. 比如对于如下字符串</p>
+<p><code>s = &quot;aba&quot;</code></p>
+<p>manacher 算法就可以在 O(n) 时间内计算得到如下数组</p>
+<p><code>arr = [1, 3, 1]</code></p>
+<p>关于manacher算法网上讲的内容已经很多了, 比如这篇<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/palindrome-partitioning/solution/manacher-o1-qiu-ren-yi-zi-chuan-shi-fou-hui-wen-by/">题解</a>讲的就挺好的, 不再复述了.</p>
+<p>核心思想其实就是复用之前得到的回文子串的信息, 避免重复计算. 贴一下自己rust实现的manacher算法代码吧</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 马拉车算法, 输入字符串s(长度为n), 算法会再s中插入n+1个</span></span><br><span class="line"><span class="comment">/// &#x27;$&#x27; 形成 sa, 然后返回一个 长度为n+1的 usize 数组 dp</span></span><br><span class="line"><span class="comment">/// dp[i] 表示sa中以 i 为中心的回文串的最大长度.</span></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">manacher</span></span>(s: &amp;<span class="built_in">String</span>)-&gt; <span class="built_in">Vec</span>&lt;<span class="built_in">usize</span>&gt;&#123;</span><br><span class="line">    <span class="keyword">let</span> n = s.len();</span><br><span class="line">    <span class="keyword">if</span> n == <span class="number">0</span> &#123;<span class="keyword">return</span> <span class="built_in">Vec</span>::new();&#125;</span><br><span class="line">    <span class="keyword">let</span> n = n * <span class="number">2</span> + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut</span> sa:<span class="built_in">Vec</span>&lt;<span class="built_in">u8</span>&gt; = <span class="built_in">Vec</span>::with_capacity(n);</span><br><span class="line">    sa.push(<span class="string">b&#x27;$&#x27;</span>);</span><br><span class="line">    <span class="keyword">for</span> ch <span class="keyword">in</span> s.chars() &#123;</span><br><span class="line">        sa.push(ch <span class="keyword">as</span> <span class="built_in">u8</span>);</span><br><span class="line">        sa.push(<span class="string">b&#x27;$&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut</span> dp: <span class="built_in">Vec</span>&lt;<span class="built_in">usize</span>&gt; = <span class="built_in">vec!</span>[<span class="number">1</span>; n];</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut</span> left=<span class="number">0</span> <span class="keyword">as</span> <span class="built_in">usize</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut</span> right=<span class="number">0</span> <span class="keyword">as</span> <span class="built_in">usize</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut</span> dig_more: <span class="built_in">bool</span>;</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">1</span>..n &#123;</span><br><span class="line">        <span class="keyword">let</span> cur: <span class="built_in">usize</span>;</span><br><span class="line">        <span class="keyword">if</span> i &lt;= right &#123;</span><br><span class="line">            cur = std::cmp::min(dp[left+right-i], (right-i)*<span class="number">2</span> + <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> cur == (right-i)*<span class="number">2</span> + <span class="number">1</span> &#123;</span><br><span class="line">                dig_more = <span class="literal">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                dp[i] = cur;</span><br><span class="line">                dig_more = <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            cur = <span class="number">1</span>;</span><br><span class="line">            dig_more = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> dig_more &#123;</span><br><span class="line">            <span class="keyword">let</span> <span class="keyword">mut</span> side = (cur-<span class="number">1</span>)/<span class="number">2</span>;</span><br><span class="line">            <span class="keyword">while</span> side&lt;i &amp;&amp; i+side&lt;n-<span class="number">1</span> &amp;&amp; </span><br><span class="line">                    sa[i-<span class="number">1</span>-side] == sa[i+side+<span class="number">1</span>] &#123;</span><br><span class="line">                        side += <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> i+side &gt; right &#123;</span><br><span class="line">                left = i-side;</span><br><span class="line">                right = i+side;</span><br><span class="line">            &#125;</span><br><span class="line">            dp[i] = side*<span class="number">2</span> + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// println!(&quot;&#123;&#125;&quot;, String::from_utf8(sa).unwrap());</span></span><br><span class="line">    <span class="comment">// println!(&quot;&#123;:?&#125;&quot;, dp);</span></span><br><span class="line">    dp</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="5-最长回文子串"><a href="#5-最长回文子串" class="headerlink" title="5. 最长回文子串"></a>5. 最长回文子串</h2><p>直接使用 manacher算法计算所有的回文子串的长度, 然后找到最大的就好了.</p>
+<p>这儿需要注意的一点就是<code>s</code>和<code>sa</code>之间索引变换关系.</p>
+<h2 id="647-回文子串"><a href="#647-回文子串" class="headerlink" title="647. 回文子串"></a>647. 回文子串</h2><p>题面如下: </p>
+<blockquote>
+<p>给定一个字符串，你的任务是计算这个字符串中有多少个回文子串。<br>具有不同开始位置或结束位置的子串，即使是由相同的字符组成，也会被计为是不同的子串。</p>
+</blockquote>
+<p>同样是直接使用 manacher算法计算所有的回文子串的长度, 然后累加一下就好了.</p>
+<h2 id="131-分割回文串"><a href="#131-分割回文串" class="headerlink" title="131. 分割回文串"></a>131. 分割回文串</h2><p>这题我是用回溯做的, 学完 manacher 之后是想过用 manacher重新实现的, 但是因为这题需要返回分割得到的字符串数组. 使用manacher相比于用回溯写一些会比较麻烦. 所以就没有再修改了.</p>
+<h2 id="132-分割回文串2"><a href="#132-分割回文串2" class="headerlink" title="132. 分割回文串2"></a>132. 分割回文串2</h2><p>这题我一开始是基于 131 的回溯算法进行修改的. 正确性没有问题, 但是因为时间复杂度太高过不了一个测试用例. 所以选择使用 manacher算法+动规来实. 并过了测试用例.</p>
+<p>先根据 manacher 算法的结果生成一个数组<code>lens</code>, <code>lens[i]</code>表示<code>s</code>中以第<code>i</code>个字符作为左边界的所有回文字串的长度.</p>
+<p>然后定义一个动态规划数组<code>dp</code>, <code>dp[i]</code>表示<code>s[..i+1]</code>这个字串最少需要切割多少次.状态转移方程如下</p>
+<p><code>dp[i+len] = min(dp[i+len], dp[i-1] + 1)</code></p>
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>通过这几道题目又巩固了一下回溯算法. 也学到了一个manacher算法. 之后遇到回文串相关的题目就应该首先想到这个算法. 时间和空间复杂度都很优秀. </p>
+<p>因为时间原因本篇博客写的有点水… 不过大致思路应该都讲清楚了.</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/palindrome-partitioning/solution/manacher-o1-qiu-ren-yi-zi-chuan-shi-fou-hui-wen-by/">参考题解</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+              <a href="/tags/leetcode/" rel="tag"># leetcode</a>
+              <a href="/tags/rust/" rel="tag"># rust</a>
+              <a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2/" rel="tag"># 字符串</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/07/2020-08-07-1-leetcode-363/" rel="prev" title="矩形区域不超过 K 的最大数值和">
+      <i class="fa fa-chevron-left"></i> 矩形区域不超过 K 的最大数值和
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/13/2020-08-13-3-Anaconda_cheetsheet/" rel="next" title="Anaconda常用操作">
+      Anaconda常用操作 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AD%A3%E6%96%87"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#manacher%E7%AE%97%E6%B3%95"><span class="nav-number">2.1.</span> <span class="nav-text">manacher算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%9C%80%E9%95%BF%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2"><span class="nav-number">2.2.</span> <span class="nav-text">5. 最长回文子串</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#647-%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2"><span class="nav-number">2.3.</span> <span class="nav-text">647. 回文子串</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#131-%E5%88%86%E5%89%B2%E5%9B%9E%E6%96%87%E4%B8%B2"><span class="nav-number">2.4.</span> <span class="nav-text">131. 分割回文串</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#132-%E5%88%86%E5%89%B2%E5%9B%9E%E6%96%87%E4%B8%B22"><span class="nav-number">2.5.</span> <span class="nav-text">132. 分割回文串2</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">3.</span> <span class="nav-text">结语</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wxk1997"
+      src="https://avatars0.githubusercontent.com/u/20255635">
+  <p class="site-author-name" itemprop="name">wxk1997</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pullp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pullp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:weixiankui1997@gmail.com" title="E-Mail → mailto:weixiankui1997@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://yoursite.com/" title="http:&#x2F;&#x2F;yoursite.com" rel="noopener" target="_blank">Title</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wxk1997</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

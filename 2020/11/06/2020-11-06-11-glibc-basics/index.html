@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="1. 前言   更新时间 更新内容    2020-11-06 初稿   2020-11-07 修复代码换行问题    2. 正文 Let’s play with glibc!  2.1. 编译 glibc官网编译指南参考[4]. 自己编译的话调试的时候可以看到glibc函数源码, 可以大大提升做题效率. 首先下载对应版本的glibc源码, 可以去官方镜像站下载[7]. (国内用户推荐去清华镜像站">
+<meta property="og:type" content="article">
+<meta property="og:title" content="glibc相关操作记录">
+<meta property="og:url" content="http://example.com/2020/11/06/2020-11-06-11-glibc-basics/index.html">
+<meta property="og:site_name" content="wxk1997&#39;s blog">
+<meta property="og:description" content="1. 前言   更新时间 更新内容    2020-11-06 初稿   2020-11-07 修复代码换行问题    2. 正文 Let’s play with glibc!  2.1. 编译 glibc官网编译指南参考[4]. 自己编译的话调试的时候可以看到glibc函数源码, 可以大大提升做题效率. 首先下载对应版本的glibc源码, 可以去官方镜像站下载[7]. (国内用户推荐去清华镜像站">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-11-05T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-11-07T05:35:01.347Z">
+<meta property="article:author" content="wxk1997">
+<meta property="article:tag" content="ctf">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="glibc">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2020/11/06/2020-11-06-11-glibc-basics/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>glibc相关操作记录 | wxk1997's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">wxk1997's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">苦中作乐</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/11/06/2020-11-06-11-glibc-basics/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/20255635">
+      <meta itemprop="name" content="wxk1997">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wxk1997's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          glibc相关操作记录
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-06 00:00:00" itemprop="dateCreated datePublished" datetime="2020-11-06T00:00:00+08:00">2020-11-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-11-07 13:35:01" itemprop="dateModified" datetime="2020-11-07T13:35:01+08:00">2020-11-07</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-前言"><a href="#1-前言" class="headerlink" title="1. 前言"></a>1. 前言</h1><table>
+<thead>
+<tr>
+<th>更新时间</th>
+<th>更新内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2020-11-06</td>
+<td>初稿</td>
+</tr>
+<tr>
+<td>2020-11-07</td>
+<td>修复代码换行问题</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="2-正文"><a href="#2-正文" class="headerlink" title="2. 正文"></a>2. 正文</h1><blockquote>
+<p>Let’s play with glibc!</p>
+</blockquote>
+<h2 id="2-1-编译-glibc"><a href="#2-1-编译-glibc" class="headerlink" title="2.1. 编译 glibc"></a>2.1. 编译 glibc</h2><p>官网编译指南参考[4].</p>
+<p>自己编译的话调试的时候可以看到glibc函数源码, 可以大大提升做题效率.</p>
+<p>首先下载对应版本的glibc源码, 可以去官方镜像站下载[7]. (国内用户推荐去清华镜像站下载[3])</p>
+<p>下载之后解压编译即可, 需要注意的是, 为了防止编译得到的libc和系统自带的libc发生冲突, 所以在编译的时候建议手动设置安装目录.</p>
+<p>下面以在<code>ubuntu-18.04</code>上编译一个2.27版本的glibc为例.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">pwd</span></span><br><span class="line">/usr/src/glibc</span><br><span class="line">$ wget https://mirrors.tuna.tsinghua.edu.cn/gnu/glibc/glibc-2.27.tar.xz <span class="comment">#下载glbic 源码压缩包</span></span><br><span class="line">$ tar xvf ./glibc-2.27.tar.xz <span class="comment"># 解压源码</span></span><br><span class="line">$ mkdir glibc-2.27_&#123;build,out&#125; <span class="comment"># 新建编译目录(glibc_2.27_build)和安装目录(glibc_2.27_out)</span></span><br><span class="line">$ <span class="built_in">cd</span> glibc-2.27_build</span><br><span class="line">$ ../glibc-2.27/configure <span class="string">&#x27;--prefix=/usr/src/glibc/glibc-2.27_out&#x27;</span> <span class="comment"># 配置安装目录</span></span><br><span class="line">$ make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+
+<p>编译完成之后可以去安装目录的lib文件夹夹下找到编译得到的 <code>libc.so</code> 和 <code>ld.so</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">pwd</span></span><br><span class="line">/usr/src/glibc/glibc-2.27_out</span><br><span class="line">$ ls -al ./lib/libc-2.27.so</span><br><span class="line">-rwxr-xr-x 1 wxk wxk 16778872 Nov  6 21:09 ./lib/libc-2.27.so</span><br><span class="line">$ ls -al ./lib/ld-2.27.so</span><br><span class="line">-rwxr-xr-x 1 wxk wxk 1398520 Nov  6 21:09 ./lib/ld-2.27.so</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-run-with-specific-glibc"><a href="#2-2-run-with-specific-glibc" class="headerlink" title="2.2. run with specific glibc"></a>2.2. run with specific glibc</h2><p>最简单的方法就是使用<code>LD_PRELOAD</code>环境变量声明想要使用的<code>libc.so</code>(目标libc). </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LD_PRELOAD=./libc.so ./program</span><br></pre></td></tr></table></figure>
+
+<p>但是这种方法不够稳定. 在加载目标libc的时候使用的还是系统自带的<code>ld.so</code>. libc和ld直接的ABI如果不一致的话就可能在加载libc或动态解析libc中函数地址时出错. 可能导致ABI版本不一样的原因有很多: libc和ld不是一个版本(不是同一个源码编译得到的); libc和ld编译时使用的编译器版本不一致或者编译时的编译参数不同. 严格来说, 只用同时编译得到的 ld 和 libc 的ABI版本才可以保证是完全一致的. </p>
+<p>所以为了可以稳定地使用目标libc, 我们最好使用对应的ld来加载程序和libc</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LD_PRELOAD=./libc.so ./ld.so ./program</span><br></pre></td></tr></table></figure>
+
+<p>对应的pwntools代码如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">io = process(<span class="string">&quot;./program&quot;</span>, env=&#123;<span class="string">&quot;LD_PRELOAD&quot;</span>:<span class="string">&quot;./libc.so&quot;</span>&#125;)</span><br><span class="line">io = process([<span class="string">&quot;./ld.so&quot;</span>, <span class="string">&quot;./program&quot;</span>], env=&#123;<span class="string">&quot;LD_PRELOAD&quot;</span>:<span class="string">&quot;./libc.so&quot;</span>&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>做ctf题时, libc常有, 而ld不常有. 但是我们可以通过libc-database[2]找到libc对应的ld.</p>
+<p>举个例子, 我们现在拿到一个 <code>libc.so</code>, 但是直接使用<code>LD_PRELOAD</code>会报错. 我们需要找到这个libc对应的ld.</p>
+<p>首先使用<code>file</code>命令获取<code>BuildID</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ file ./libc.so</span><br><span class="line">./libc.so: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=c4fd86ec1eed57a09c79ce601f6c6e3796f574df, <span class="keyword">for</span> GNU/Linux 2.6.32, stripped</span><br></pre></td></tr></table></figure>
+
+<p>用<code>BuildID</code>去libc-database的数据库里面搜索</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ libc-database git:(master) ./identify bid=c4fd86ec1eed57a09c79ce601f6c6e3796f574df</span><br><span class="line">libc6_2.23-0ubuntu11.2_amd64</span><br></pre></td></tr></table></figure>
+
+<p>搜索命中, 接下来下载这个libc package, 就可以拿到ld了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ ./download libc6_2.23-0ubuntu11.2_amd64</span><br><span class="line"> -&gt; Downloading package</span><br><span class="line">  -&gt; Extracting package</span><br><span class="line">  -&gt; Package saved to libs/libc6_2.23-0ubuntu11.2_amd64</span><br><span class="line">$ ls  -al ./libs/libc6_2.23-0ubuntu11.2_amd64/ld-linux-x86-64.so.2</span><br><span class="line">-rwxr-xr-x 1 wxk wxk 162632 Nov  6 22:04 ./libs/libc6_2.23-0ubuntu11.2_amd64/ld-linux-x86-64.so.2</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-3-compile-with-specific-glibc"><a href="#2-3-compile-with-specific-glibc" class="headerlink" title="2.3. compile with specific glibc"></a>2.3. compile with specific glibc</h2><p>有时候出题时需要在编译时使用非系统自带的libc.主要就是用gcc编译时设置一些参数, 方法参考[8].</p>
+<p>直接结合具体例子来讲. 以在<code>ubuntu-18.04</code>上编译一个使用<code>glibc 2.32</code>的程序为例.</p>
+<p>首先需要有编译好的<code>glibc 2.32</code>. 这儿推荐使用docker-glibc-builder[1]. 方便快捷.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ sudo docker run --rm --env STDOUT=1 sgerrand/glibc-builder 2.32 /usr/glibc-compat &gt; glibc-bin.tar.gz <span class="comment"># 编译得到 glibc package</span></span><br><span class="line">$ tar xvf ./glibc-bin.tar.gz</span><br><span class="line">$ <span class="built_in">cd</span> usr/glibc-compat</span><br><span class="line">$ <span class="built_in">pwd</span></span><br><span class="line">/home/wxk/hitctf-pwn/usr/glibc-compat</span><br><span class="line">$ <span class="built_in">export</span> glibc_install=`<span class="built_in">pwd</span>` <span class="comment"># glibc_install这个环境变量之后使用gcc的时候要用到</span></span><br><span class="line">$ sudo ln -s /home/wxk/hitctf-pwn/usr/glibc-compat /usr/glibc-compat <span class="comment"># ld.so 会去 /usr/glibc-compat 找数据, 所以需要建立一个符号链接</span></span><br></pre></td></tr></table></figure>
+
+<p>test_glibc.c 内容如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _GNU_SOURCE</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;gnu/libc-version.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;gnu_get_libc_version() = %s\n&quot;</span>, gnu_get_libc_version());</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;hello_world\n&quot;</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;This is wxk speaking\n&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用如下命令编译</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="variable">$glibc_install</span> <span class="comment"># 确保这个环境变量没问题</span></span><br><span class="line">$ gcc \</span><br><span class="line">  -L <span class="string">&quot;<span class="variable">$&#123;glibc_install&#125;</span>/lib&quot;</span> \</span><br><span class="line">  -I <span class="string">&quot;<span class="variable">$&#123;glibc_install&#125;</span>/include&quot;</span> \</span><br><span class="line">  -Wl,--rpath=<span class="string">&quot;<span class="variable">$&#123;glibc_install&#125;</span>/lib&quot;</span> \</span><br><span class="line">  -Wl,--dynamic-linker=<span class="string">&quot;<span class="variable">$&#123;glibc_install&#125;</span>/lib/ld-linux-x86-64.so.2&quot;</span> \</span><br><span class="line">  -std=c11 \</span><br><span class="line">  -v \</span><br><span class="line">  -o test_glibc.out \</span><br><span class="line">  ./test_glibc.c </span><br><span class="line">$ ./test_glibc.out</span><br><span class="line">gnu_get_libc_version() = 2.32</span><br><span class="line">hello world</span><br><span class="line">This is wxk speaking</span><br><span class="line">$ ldd ./test_glibc.out</span><br><span class="line">        linux-vdso.so.1 (0x00007fff333fd000)</span><br><span class="line">        libc.so.6 =&gt; /home/wxk/hitctf-pwn/usr/glibc-compat/lib/libc.so.6 (0x00007f27730ec000)</span><br><span class="line">        /home/wxk/hitctf-pwn/usr/glibc-compat/lib/ld-linux-x86-64.so.2 =&gt; /lib64/ld-linux-x86-64.so.2 (0x00007f2773090000)</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-4-Miscellaneous"><a href="#2-4-Miscellaneous" class="headerlink" title="2.4. Miscellaneous"></a>2.4. Miscellaneous</h2><p>介绍一些glibc相关的小技巧</p>
+<h3 id="2-4-1-源码级调试glibc函数"><a href="#2-4-1-源码级调试glibc函数" class="headerlink" title="2.4.1. 源码级调试glibc函数"></a>2.4.1. 源码级调试glibc函数</h3><p>方法参考一个stackoverflow问题[5]. </p>
+<p>首先使用的libc需要带有调试符号. 系统的自带的libc可以通过apt安装调试符号. 或者自己编译带符号的libc.</p>
+<p>然后使用<code>dir</code>命令告诉<code>gdb</code>源码路径即可.</p>
+<p>以调试<code>malloc</code>为例(使用系统自带libc).</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt install libc6-dbg <span class="comment"># 安装调试符号</span></span><br><span class="line">$ sudo apt install glibc-source <span class="comment"># 安装(下载)源码</span></span><br><span class="line">$ <span class="built_in">cd</span> /usr/src/glibc <span class="comment"># 源码下载到这个文件夹下</span></span><br><span class="line">$ ls</span><br><span class="line">debian  glibc-2.27.tar.xz</span><br><span class="line">$ sudo chmod 777 -R . <span class="comment"># 当前目录默认不可写, 需要设置一下权限</span></span><br><span class="line">$ tar xvf ./glibc-2.27.tar.xz <span class="comment"># 解压源码</span></span><br><span class="line">$ <span class="built_in">cd</span> glibc-2.27/malloc <span class="comment"># 进入malloc源码目录</span></span><br><span class="line">$ <span class="built_in">pwd</span></span><br><span class="line">/usr/src/glibc/glibc-2.27/malloc</span><br><span class="line">$ <span class="built_in">echo</span> <span class="string">&quot;dir `pwd`&quot;</span> &gt;&gt; ~/.gdbinit <span class="comment"># 将dir命令写入 .gdbinit文件, gdb启动时会自动执行</span></span><br></pre></td></tr></table></figure>
+
+<p>之后用gdb调试程序遇到malloc函数就可以看到源码了.</p>
+<h3 id="2-4-2-通过函数地址得到-libc-版本"><a href="#2-4-2-通过函数地址得到-libc-版本" class="headerlink" title="2.4.2. 通过函数地址得到 libc 版本"></a>2.4.2. 通过函数地址得到 libc 版本</h3><p>有些题目比较狗, 明明利用过程中需要用到libc中的一些偏移, 但是题目不给libc. 这个时候如果我们可以leak libc中一些符号(通常是函数)的地址, 就可以使用工具拿到libc的版本.</p>
+<p>原理很简单, 因为libc加载到内存中时是按页对齐的, 一页是4KB(12bit). 所以不管libc地址怎么随机化, 低12bit都是保持不变的. 但是同一个符号在不同版本的libc中低12bit通常是不一样的. 因此可以利用符号地址的低12bit来判断libc版本. 有时候仅仅通过一个符号可以找到多个候选libc, 可以通过多泄露几个符号地址缩小搜索范围.</p>
+<p>推荐使用libc-database[2]. 具体使用方法参考官方文档即可.<br>如果比赛时可以联网的话(个人认为不能联网的比赛都是垃圾比赛), 可以使用在线版的libc-database: </p>
+<p><a target="_blank" rel="noopener" href="https://libc.rip/">https://libc.rip</a></p>
+<h1 id="3-结语"><a href="#3-结语" class="headerlink" title="3. 结语"></a>3. 结语</h1><p>这篇博客是基于之前在简书上的那一篇博客[9]的. 增加了一些新内容, 比如compile with specific libc, libc-database等. 也简化了一些使用方法. 整体结构脉络更加清晰了.</p>
+<p>之后如果遇到glibc相关的知识, 本篇博客也会继续更新的. </p>
+<p>如果有任何疑问或者观点, 欢迎在评论区讨论 :P .</p>
+<h1 id="4-参考"><a href="#4-参考" class="headerlink" title="4. 参考"></a>4. 参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://github.com/sgerrand/docker-glibc-builder">编译glibc的docker - github</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/niklasb/libc-database">libc-database - github</a></li>
+<li><a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/gnu/glibc/">清华tuna镜像站glibc文件夹</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://gnu.org/software/libc/manual/html_mono/libc.html%23toc-Installing-the-GNU-C-Library">glibc官网编译指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/29955609/include-source-code-of-malloc-c-in-gdb">Include source code of malloc.c in gdb? - stackoverflow</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/NixOS/patchelf">patchelf - github</a></li>
+<li><a target="_blank" rel="noopener" href="https://ftp.gnu.org/gnu/glibc/">glibc官方镜像站</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/2856438/how-can-i-link-to-a-specific-glibc-version">How can I link to a specific glibc version? - stackoverflow</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/ee1ad4044ef7">同时使用多种版本的libc &amp;&amp; 编译libc</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ctf/" rel="tag"># ctf</a>
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+              <a href="/tags/glibc/" rel="tag"># glibc</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/09/2020-00-00-n-android-capture-traffic/" rel="prev" title="安卓流量抓包指北">
+      <i class="fa fa-chevron-left"></i> 安卓流量抓包指北
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/11/23/hello-world/" rel="next" title="Hello World">
+      Hello World <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">1. 前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E6%AD%A3%E6%96%87"><span class="nav-number">2.</span> <span class="nav-text">2. 正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E7%BC%96%E8%AF%91-glibc"><span class="nav-number">2.1.</span> <span class="nav-text">2.1. 编译 glibc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-run-with-specific-glibc"><span class="nav-number">2.2.</span> <span class="nav-text">2.2. run with specific glibc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-compile-with-specific-glibc"><span class="nav-number">2.3.</span> <span class="nav-text">2.3. compile with specific glibc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-Miscellaneous"><span class="nav-number">2.4.</span> <span class="nav-text">2.4. Miscellaneous</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-1-%E6%BA%90%E7%A0%81%E7%BA%A7%E8%B0%83%E8%AF%95glibc%E5%87%BD%E6%95%B0"><span class="nav-number">2.4.1.</span> <span class="nav-text">2.4.1. 源码级调试glibc函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-2-%E9%80%9A%E8%BF%87%E5%87%BD%E6%95%B0%E5%9C%B0%E5%9D%80%E5%BE%97%E5%88%B0-libc-%E7%89%88%E6%9C%AC"><span class="nav-number">2.4.2.</span> <span class="nav-text">2.4.2. 通过函数地址得到 libc 版本</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E7%BB%93%E8%AF%AD"><span class="nav-number">3.</span> <span class="nav-text">3. 结语</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">4. 参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wxk1997"
+      src="https://avatars0.githubusercontent.com/u/20255635">
+  <p class="site-author-name" itemprop="name">wxk1997</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pullp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pullp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:weixiankui1997@gmail.com" title="E-Mail → mailto:weixiankui1997@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://yoursite.com/" title="http:&#x2F;&#x2F;yoursite.com" rel="noopener" target="_blank">Title</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wxk1997</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
