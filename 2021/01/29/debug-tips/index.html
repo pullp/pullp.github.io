@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"pullp.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.7.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="some tips about debug">
+<meta property="og:type" content="article">
+<meta property="og:title" content="debug tips">
+<meta property="og:url" content="https://pullp.github.io/2021/01/29/debug-tips/index.html">
+<meta property="og:site_name" content="wxk1997&#39;s blog">
+<meta property="og:description" content="some tips about debug">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-01-29T07:12:03.000Z">
+<meta property="article:modified_time" content="2021-08-27T08:21:06.371Z">
+<meta property="article:author" content="wxk1997">
+<meta property="article:tag" content="ctf">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://pullp.github.io/2021/01/29/debug-tips/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://pullp.github.io/2021/01/29/debug-tips/","path":"2021/01/29/debug-tips/","title":"debug tips"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>debug tips | wxk1997's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">wxk1997's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">learn and share</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+        <li class="menu-item menu-item-friends"><a href="/friends/" rel="section"><i class="fa fa-archive fa-fw"></i>friends</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AD%A3%E6%96%87"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9Fpwn%E8%B0%83%E8%AF%95"><span class="nav-number">2.1.</span> <span class="nav-text">传统pwn调试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%97%AD%E5%9C%B0%E5%9D%80%E9%9A%8F%E6%9C%BA%E5%8C%96"><span class="nav-number">2.1.1.</span> <span class="nav-text">关闭地址随机化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E7%BA%A7%E8%B0%83%E8%AF%95glibc%E4%B8%AD%E7%9A%84%E5%87%BD%E6%95%B0"><span class="nav-number">2.1.2.</span> <span class="nav-text">源码级调试glibc中的函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gdb-%E8%87%AA%E5%8A%A8%E5%8C%96-commands"><span class="nav-number">2.1.3.</span> <span class="nav-text">gdb 自动化 (commands)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E5%A4%9A%E8%BF%9B%E7%A8%8B%E7%A8%8B%E5%BA%8F"><span class="nav-number">2.1.4.</span> <span class="nav-text">调试多进程程序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8Epwntools%E8%81%94%E5%8A%A8"><span class="nav-number">2.1.5.</span> <span class="nav-text">与pwntools联动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8EIDA%E8%81%94%E5%8A%A8"><span class="nav-number">2.1.6.</span> <span class="nav-text">与IDA联动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#qemu-system-mode-%E8%B0%83%E8%AF%95"><span class="nav-number">2.2.</span> <span class="nav-text">qemu system mode 调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#qemu-user-mode-%E8%B0%83%E8%AF%95"><span class="nav-number">2.3.</span> <span class="nav-text">qemu user-mode 调试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#riscv%E8%B0%83%E8%AF%95"><span class="nav-number">2.3.1.</span> <span class="nav-text">riscv调试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#arm-%E8%B0%83%E8%AF%95"><span class="nav-number">2.3.2.</span> <span class="nav-text">arm 调试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E8%B0%83%E8%AF%95qemu%E7%A8%8B%E5%BA%8F"><span class="nav-number">2.4.</span> <span class="nav-text">直接调试qemu程序</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">3.</span> <span class="nav-text">结语</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wxk1997"
+      src="https://avatars0.githubusercontent.com/u/20255635">
+  <p class="site-author-name" itemprop="name">wxk1997</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pullp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pullp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:weixiankui1997@gmail.com" title="E-Mail → mailto:weixiankui1997@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pullp.github.io/2021/01/29/debug-tips/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/20255635">
+      <meta itemprop="name" content="wxk1997">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wxk1997's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          debug tips
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-01-29 15:12:03" itemprop="dateCreated datePublished" datetime="2021-01-29T15:12:03+08:00">2021-01-29</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-08-27 16:21:06" itemprop="dateModified" datetime="2021-08-27T16:21:06+08:00">2021-08-27</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/tips/" itemprop="url" rel="index"><span itemprop="name">tips</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><table>
+<thead>
+<tr>
+<th>更新时间</th>
+<th>更新内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2021-02-02</td>
+<td>初稿</td>
+</tr>
+</tbody></table>
+<p>记录一些关于调试的小技巧.</p>
+<hr>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="传统pwn调试"><a href="#传统pwn调试" class="headerlink" title="传统pwn调试"></a>传统pwn调试</h2><p>介绍传统glibc pwn题调试的一些技巧:</p>
+<h3 id="关闭地址随机化"><a href="#关闭地址随机化" class="headerlink" title="关闭地址随机化"></a>关闭地址随机化</h3><p>地址随机是一种针对攻击的缓解措施, 此处讨论的代码段的随机化. 我们使用<code>checksec</code>检查可执行文件保护措施的时候可以看到<code>PIE</code>这一项:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ checksec /bin/ls</span><br><span class="line">[*] <span class="string">&#x27;/bin/ls&#x27;</span></span><br><span class="line">    Arch:     amd64-64-little</span><br><span class="line">    RELRO:    Full RELRO</span><br><span class="line">    Stack:    Canary found</span><br><span class="line">    NX:       NX enabled</span><br><span class="line">    PIE:      PIE enabled</span><br><span class="line">    FORTIFY:  Enabled</span><br></pre></td></tr></table></figure>
+
+<p><strong>PIE</strong>(<strong>P</strong>osition <strong>I</strong>ndependent <strong>E</strong>xecutables)表示这个程序是位置无关的, 即它可以被加载到内存任意地址处都可以正常执行. 默认情况下这类程序每次执行的时候在内存中的位置都是随机的(按页对齐). 因此极其不利于我们调试的时候进行查看内存, 下断点等操作. 因此我们需要想办法将随机化关掉.</p>
+<p>负责将可执行文件加载到内存中的操作(应该)是内核中某块代码负责完成的, 好消息是, 内核给我们提供了一个选项: 用于控制将可执行文件加载到内存中时的随机化程度, 该选项的值可以为 0, 1, 2. 为0时内核在进行加载时就不会进行随机化操作, 为2时则会进行随机化操作. (1 和 2的区别我也不太清楚). 因此我们将该选项置为即可禁用加载时的随机化操作. 此时即使可执行文件支持随机化加载也无济于事了.</p>
+<p>修改命令如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo bash -c <span class="string">&quot;echo 0 &gt; /proc/sys/kernel/randomize_va_space&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>: 关闭随机化会降低系统的安全性, 所以不建议在服务器上进行该操作.</p>
+<p>我们在使用IDA分析这类PIE程序的时候, IDA通常是将elf文件的基地址当作0. 此时我们我们如果在IDA里面看了一下地址, 然后想去gdb里面下个断点或者看个内存什么的也不是很很方便, 需要加上一个基地址什么的. 我们可以通过如下操作在IDA中设置可执行文件的基地址:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Edit -&gt; Segments -&gt; Rebase Program... -&gt; 在value栏输入程序基地址(gdb下使用&#96;vmmap&#96;指令查看 or &#96;cat &#x2F;proc&#x2F;pid&#x2F;maps&#96;查看)</span><br><span class="line"># 一个典型值是 : 0x0000555555554000 (纯经验, 不一定靠谱)</span><br></pre></td></tr></table></figure>
+
+<h3 id="源码级调试glibc中的函数"><a href="#源码级调试glibc中的函数" class="headerlink" title="源码级调试glibc中的函数"></a>源码级调试glibc中的函数</h3><p>参考笔者的另一篇文章: <a href="https://pullp.github.io/2020/11/06/11-glibc-tips/#2-4-2-%E9%80%9A%E8%BF%87%E5%87%BD%E6%95%B0%E5%9C%B0%E5%9D%80%E5%BE%97%E5%88%B0-libc-%E7%89%88%E6%9C%AC">glibc相关操作记录</a></p>
+<h3 id="gdb-自动化-commands"><a href="#gdb-自动化-commands" class="headerlink" title="gdb 自动化 (commands)"></a>gdb 自动化 (commands)</h3><p>参考笔者的另一篇文章: <a href="https://pullp.github.io/2020/09/05/7-gdb-commands/">gdb自动化操作</a></p>
+<h3 id="调试多进程程序"><a href="#调试多进程程序" class="headerlink" title="调试多进程程序"></a>调试多进程程序</h3><p>使用gdb提供的命令设置<code>fork</code>时跟随的执行流:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set follow-fork-mode child&#x2F;parent</span><br></pre></td></tr></table></figure>
+
+<h3 id="与pwntools联动"><a href="#与pwntools联动" class="headerlink" title="与pwntools联动"></a>与pwntools联动</h3><p>在pwntools中启动gdb调试有两种方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">io = gdb.debug([<span class="string">&quot;pwn&quot;</span>, <span class="string">&quot;arg1&quot;</span>], <span class="string">&quot;gdb script&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">io = process([<span class="string">&quot;pwn&quot;</span>, <span class="string">&quot;arg1&quot;</span>])</span><br><span class="line">gdb.attach(io, <span class="string">&quot;gdb script&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>第一种方法get shell时会失败, 注意下即可</p>
+<p>第二种方法程序启动之后就会一直执行到阻塞处(如等待用户输入), 所以下断点要下载阻塞之后, 否则可能断不下来.</p>
+<h3 id="与IDA联动"><a href="#与IDA联动" class="headerlink" title="与IDA联动"></a>与IDA联动</h3><p>参考:<a target="_blank" rel="noopener" href="https://www.cnblogs.com/from-zero/p/13300396.html">IDA远程调试Linux文件（QEMU）</a></p>
+<h2 id="qemu-system-mode-调试"><a href="#qemu-system-mode-调试" class="headerlink" title="qemu system mode 调试"></a>qemu system mode 调试</h2><p>通常是kernel pwn. qemu 启动时加上以下参数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-S -gdb tcp::1234</span><br></pre></td></tr></table></figure>
+
+<p>其中:</p>
+<ul>
+<li>-S表示停在执行之前等待gdb连接</li>
+<li>-gdb tcp::1234 表示监听 1234 端口等待 gdb 连接</li>
+</ul>
+<p>调试脚本模板如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line">gdb -q \</span><br><span class="line">    -ex <span class="string">&quot;file vmlinux&quot;</span> \</span><br><span class="line">    -ex <span class="string">&quot;target remote localhost:1234&quot;</span></span><br><span class="line">    -ex <span class="string">&quot;break *some_addr&quot;</span> \</span><br><span class="line">    -ex <span class="string">&quot;break some_symbol&quot;</span> \</span><br><span class="line">    -ex <span class="string">&quot;add-symbol-file file_path addr&quot;</span></span><br><span class="line">    -ex <span class="string">&quot;continue&quot;</span> \</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="qemu-user-mode-调试"><a href="#qemu-user-mode-调试" class="headerlink" title="qemu user-mode 调试"></a>qemu user-mode 调试</h2><p>通常是一些非x86架构的题目. 对于非x86架构的题目调试的时候需要使用 <code>gdb-multiarch</code>, 同时对于不同架构, gdb插件的支持情况也有所不同. 比如 riscv:rv64下pwngdb就用不了, 但是gef可以使用(偶尔会报错).</p>
+<p>用qeme启动时加上<code>-g port </code>参数, 设置监听gdb连接的端口.</p>
+<h3 id="riscv调试"><a href="#riscv调试" class="headerlink" title="riscv调试"></a>riscv调试</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#直接启动</span></span><br><span class="line">./qemu-riscv64 main</span><br><span class="line"></span><br><span class="line"><span class="comment">#调试启动</span></span><br><span class="line">./qemu-riscv64 -g 1234 main</span><br><span class="line"></span><br><span class="line"><span class="comment">#调试脚本(如果是32位的话将 riscv:rv64 换成  riscv:rv32 即可)</span></span><br><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line">gdb-multiarch -q \</span><br><span class="line">  -ex <span class="string">&#x27;set architecture riscv:rv64&#x27;</span> \</span><br><span class="line">  -ex <span class="string">&#x27;file main&#x27;</span> \</span><br><span class="line">  -ex <span class="string">&#x27;target remote localhost:1234&#x27;</span> \</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+<h3 id="arm-调试"><a href="#arm-调试" class="headerlink" title="arm 调试"></a>arm 调试</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 执行脚本</span></span><br><span class="line">qemu-aarch64 -cpu ma  x -g 1234 -L . ./chall</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调试脚本</span></span><br><span class="line">gdb-multiarch -q \</span><br><span class="line">  -ex <span class="string">&#x27;set architecture aarch64&#x27;</span> \</span><br><span class="line">  -ex <span class="string">&#x27;file pwn&#x27;</span> \</span><br><span class="line">  -ex <span class="string">&#x27;target remote localhost:1234&#x27;</span> \</span><br><span class="line">  -ex <span class="built_in">continue</span> \</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>其余架构的题目没有遇到过, 欢迎补充.</p>
+<h2 id="直接调试qemu程序"><a href="#直接调试qemu程序" class="headerlink" title="直接调试qemu程序"></a>直接调试qemu程序</h2><p>通常是一些qemu逃逸题目. </p>
+<p>下面的实例来自于<a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/197650#h3-6">strng2 湖湘杯 2019 – 安全客</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ strng2 cat ./debug </span><br><span class="line">file qemu-system-x86_64</span><br><span class="line">b strng_mmio_read</span><br><span class="line">b strng_mmio_write</span><br><span class="line">b strng_pmio_read</span><br><span class="line">b strng_pmio_write</span><br><span class="line"><span class="built_in">set</span> <span class="variable">$state</span>=0x555556a64db0</span><br><span class="line"><span class="built_in">set</span> <span class="variable">$addr</span>=<span class="variable">$state</span>+0xaf0</span><br><span class="line"><span class="built_in">set</span> <span class="variable">$regs</span>=<span class="variable">$state</span>+0xaf8</span><br><span class="line"><span class="built_in">set</span> <span class="variable">$timer</span>=<span class="variable">$state</span>+0xbf8</span><br><span class="line">run -initrd ./rootfs.cpio -kernel ./vmlinuz-4.8.0-52-generic -append <span class="string">&#x27;console=ttyS0 root=/dev/ram oops=panic panic=1&#x27;</span> -enable-kvm -monitor /dev/null -m 64M --nographic -L ./dependency/usr/<span class="built_in">local</span>/share/qemu -L pc-bios -device strng</span><br><span class="line">$ strng2 sudo gdb --<span class="built_in">command</span>=./debug</span><br></pre></td></tr></table></figure>
+
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>都是一些经验之谈,欢迎补充 :smile:.</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/197650#h3-6">strng2 湖湘杯 2019 – 安全客</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/from-zero/p/13300396.html">IDA远程调试Linux文件（QEMU）</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ctf/" rel="tag"># ctf</a>
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/01/23/starctf-2021-writeup/" rel="prev" title="starctf(*ctf)-2021 writeup">
+                  <i class="fa fa-chevron-left"></i> starctf(*ctf)-2021 writeup
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2021/01/30/shellcode-tips/" rel="next" title="shellcode tips">
+                  shellcode tips <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wxk1997</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"pullp","repo":"pullp.github.io","client_id":"fe859336a9fbdeb3f2dc","client_secret":"10b651022b6a16968955aa45ac4537b2d97686de","admin_user":"pullp","distraction_free_mode":true,"language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"ab49e06ba297603aac69849d27d2f6fe"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

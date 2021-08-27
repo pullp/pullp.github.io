@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"pullp.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.7.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="记录一下python中 logging 库的一些基本用法, 备忘">
+<meta property="og:type" content="article">
+<meta property="og:title" content="log in python">
+<meta property="og:url" content="https://pullp.github.io/2020/12/15/14-log-in-python/index.html">
+<meta property="og:site_name" content="wxk1997&#39;s blog">
+<meta property="og:description" content="记录一下python中 logging 库的一些基本用法, 备忘">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-12-15T11:25:11.000Z">
+<meta property="article:modified_time" content="2021-08-27T08:21:06.367Z">
+<meta property="article:author" content="wxk1997">
+<meta property="article:tag" content="log">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://pullp.github.io/2020/12/15/14-log-in-python/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://pullp.github.io/2020/12/15/14-log-in-python/","path":"2020/12/15/14-log-in-python/","title":"log in python"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>log in python | wxk1997's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">wxk1997's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">learn and share</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+        <li class="menu-item menu-item-friends"><a href="/friends/" rel="section"><i class="fa fa-archive fa-fw"></i>friends</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">1. 前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E6%AD%A3%E6%96%87"><span class="nav-number">2.</span> <span class="nav-text">2. 正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95"><span class="nav-number">2.1.</span> <span class="nav-text">2.1. 基本用法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-Logger-Handler-and-Filter"><span class="nav-number">2.2.</span> <span class="nav-text">2.2. Logger, Handler and  Filter</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-colorful-log"><span class="nav-number">2.3.</span> <span class="nav-text">2.3. colorful log!</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E7%BB%93%E8%AF%AD"><span class="nav-number">3.</span> <span class="nav-text">3. 结语</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">4. 参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wxk1997"
+      src="https://avatars0.githubusercontent.com/u/20255635">
+  <p class="site-author-name" itemprop="name">wxk1997</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pullp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pullp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:weixiankui1997@gmail.com" title="E-Mail → mailto:weixiankui1997@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pullp.github.io/2020/12/15/14-log-in-python/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/20255635">
+      <meta itemprop="name" content="wxk1997">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wxk1997's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          log in python
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-12-15 19:25:11" itemprop="dateCreated datePublished" datetime="2020-12-15T19:25:11+08:00">2020-12-15</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-08-27 16:21:06" itemprop="dateModified" datetime="2021-08-27T16:21:06+08:00">2021-08-27</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/python%E5%9F%BA%E7%A1%80/" itemprop="url" rel="index"><span itemprop="name">python基础</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="1-前言"><a href="#1-前言" class="headerlink" title="1. 前言"></a>1. 前言</h1><table>
+<thead>
+<tr>
+<th>更新时间</th>
+<th>更新内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2020-12-15</td>
+<td>初稿</td>
+</tr>
+</tbody></table>
+<hr>
+<p>大多数人写代码的时候难免会遇到代码出错的情况, 为了分析出问题的地点往往需要对程序进行调试, 而最快捷的调试方法应该就是<code>print调试大法</code>了. 通过打印执行过程中的变量来进行分析. 不过这种方法有一个缺点, 有时候问题比较复杂, 因此在分析问题过程中会在代码中插入大量的<code>print</code>语句来打印变量. 当成功定位到问题并修复问题之后我们想要删除那些<code>print</code>语句时就会遇到问题,  <code>print</code>语句太多, 一个个删除起来麻烦, 如果批量删除的话又可能误伤那些正常逻辑部分的代码. 此时我们可以考虑使用<code>日志(log)</code>功能, 当成功定位到问题之后只需要修改一句就可以不再看到那些打印的内容.</p>
+<h1 id="2-正文"><a href="#2-正文" class="headerlink" title="2. 正文"></a>2. 正文</h1><p>python官方提供了一个日志库: <code>logging</code>. 本文主要就是介绍该库的一些基础使用方法, 仅供参考. 更详细的使用方法敬请参考官方教程[1]. </p>
+<p><strong>如有出入, 以官方文档为准</strong></p>
+<h2 id="2-1-基本用法"><a href="#2-1-基本用法" class="headerlink" title="2.1. 基本用法"></a>2.1. 基本用法</h2><p><code>logging</code>库非常好上手, 执行如下代码就可以往终端打印内容(log record).</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line">logging.warn(<span class="string">&quot;hello from logging&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><code>logging</code> 提供了五个打印函数:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">logging.debug()</span><br><span class="line">logging.info()</span><br><span class="line">logging.warning()</span><br><span class="line">logging.error()</span><br><span class="line">logging.critical()</span><br></pre></td></tr></table></figure>
+
+<p>这五个函数有不同的级别, <code>logging.debug()</code> 级别最低, <code>logging.critical()</code>级别最高.下表给出了五个级别的推荐使用场景:<br>| Level | When it’s used |<br>| – | – |<br>| DEBUG | 打印详细的信息, 用于程序出问题时进行分析 |<br>| INFO | 记录一些内容用于确认程序在按照预期执行 |<br>| WARNING | 提醒一些非预期情况发生了. 或者用于提醒可能将要出现的问题(如磁盘空间不足). 但是程序仍然在正常执行 |<br>| ERROR | 由于一些更严重的问题, 程序某些功能无法正常工作 |<br>| CRITICAL | 出现了严重错误, 程序可能无法继续执行 |</p>
+<p> 我们可以通过<code>logging.basicConfig()</code>函数来设置我们期望的日志级别<code>loglevel</code>(<code>loglevel</code>默认是<code>WARNING</code>). 仅当打印函数的级别大于等于当前的<code>loglevel</code>时, 打印的内容才会被输出到终端上.</p>
+<p>因此如果执行如下代码:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line">logging.debug(<span class="string">&quot;hello from debug&quot;</span>)</span><br><span class="line">logging.warning(<span class="string">&quot;hello from warning&quot;</span>)</span><br><span class="line">logging.error(<span class="string">&quot;hello from error&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>我们就只能在终端上看见;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">WARNING:root:hello from warning</span><br><span class="line">ERROR:root:hello from error</span><br></pre></td></tr></table></figure>
+
+<p>为了让<code>logging.debug()</code>打印的内容也能被看见, 我们可以设置<code>loglevel</code>为<code>logging.DEBUG</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line">logging.basicConfig(level=logging.DEBUG)</span><br><span class="line">logging.debug(<span class="string">&quot;hello from debug&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>至此, 我们已经可以实现前言中的需求了(修改<code>loglevel</code>). 接下来我们会更深入地了解<code>logging</code>库, 了解一些更高级的用法, 来实现这样一个功能: </p>
+<p>将<code>level&gt;=DEBUG</code>的日志输出到一个文件中, 同时将<code>level&gt;=INFO</code>的日志打印到终端上.</p>
+<h2 id="2-2-Logger-Handler-and-Filter"><a href="#2-2-Logger-Handler-and-Filter" class="headerlink" title="2.2. Logger, Handler and  Filter"></a>2.2. Logger, Handler and  Filter</h2><p><code>logging</code>库使用了模块化的设计, 提供了几个组件: <code>logger</code>, <code>handler</code>, <code>filter</code>以及<code>formatter</code>.</p>
+<ul>
+<li><code>logger</code> 向用户代码暴露调用接口(api)</li>
+<li><code>handler</code> 负责将日志记录(log record)送达正确的目的地(可以是终端/文件/邮件/etc…)</li>
+<li><code>filter</code> 负责对日志记录(log record)进行过滤操作</li>
+<li><code>formatter</code> 决定日志记录(log record)最终输出格式.</li>
+</ul>
+<p>为了将日志打印到终端上.<br>我们需要先有一个<code>logger</code>用于调用库提供的各种api, 下面是一种推荐的获取<code>logger</code>的方法. </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">logger = logging.getLogger(__name__)</span><br></pre></td></tr></table></figure>
+
+<p>我们可以通过调用<code>logger.setLevel()</code>函数来设置<code>logger</code>的<code>loglevel</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">logger.setLevel(logging.DEBUG)</span><br></pre></td></tr></table></figure>
+
+<p>然后我们需要一个<code>handler</code>负责将日志记录打印到终端上, <code>handler</code> 同样可以设置<code>loglevel</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># create console handler and set level to debug</span></span><br><span class="line">ch = logging.StreamHandler()</span><br><span class="line">ch.setLevel(logging.INFO)</span><br></pre></td></tr></table></figure>
+
+<p>然后将这个<code>handler</code>和之前获得的<code>logger</code>绑定起来.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># add ch to logger</span></span><br><span class="line">logger.addHandler(ch)</span><br></pre></td></tr></table></figure>
+
+<p>之后使用<code>looger</code>记录日志, <code>logger</code>会先将日志的级别与自身的<code>loglevel</code>进行比较, 仅当日志级别大于等于自身<code>loglevel</code>时才会将日志输出给与其绑定的<code>handler</code>. <code>handler</code>在收到日志之后同样会将日志的级别与自身的<code>loglevel</code>进行比较, 仅当日志级别大于等于自身<code>loglevel</code>时才会将其输出到对应的目的地.</p>
+<p>所以执行如下代码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line"><span class="comment"># create logger</span></span><br><span class="line">logger = logging.getLogger(__name__)</span><br><span class="line">logger.setLevel(logging.DEBUG)</span><br><span class="line"></span><br><span class="line"><span class="comment"># create console handler and set level to info</span></span><br><span class="line">ch = logging.StreamHandler()</span><br><span class="line">ch.setLevel(logging.INFO)</span><br><span class="line"></span><br><span class="line"><span class="comment"># add ch to logger</span></span><br><span class="line">logger.addHandler(ch)</span><br><span class="line"></span><br><span class="line"><span class="comment"># &#x27;application&#x27; code</span></span><br><span class="line">logger.debug(<span class="string">&#x27;debug message&#x27;</span>)</span><br><span class="line">logger.info(<span class="string">&#x27;info message&#x27;</span>)</span><br><span class="line">logger.warning(<span class="string">&#x27;warn message&#x27;</span>)</span><br><span class="line">logger.error(<span class="string">&#x27;error message&#x27;</span>)</span><br><span class="line">logger.critical(<span class="string">&#x27;critical message&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>我们会在终端看到下输出, 没有<code>logger.dbeug()</code>的输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">info message</span><br><span class="line">warn message</span><br><span class="line">error message</span><br><span class="line">critical message</span><br></pre></td></tr></table></figure>
+
+<p>此时我们就已经实现将级别大于等于<code>INFO</code>的日志输出到终端的功能了, 接下来要实现的就是将级别大于等于<code>DEBUG</code>都输出到文件中的功能.</p>
+<p>实现起来也很简单: 创建一个输出到文件<code>handler</code>, 设置其<code>loglevel</code>为<code>DEBUG</code>并将其绑定到<code>logger</code>上即可. 将如下代码添加到上边的代码中.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">fh = logging.FileHandler(<span class="string">&quot;tmp.log&quot;</span>)</span><br><span class="line">fh.setLevel(logging.DEBUG)</span><br><span class="line">logger.addHandler(fh)</span><br></pre></td></tr></table></figure>
+
+<p>再次执行, 可以在<code>tmp.log</code>文件中看到<code>logger.debug()</code>输出的日志:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">debug message</span><br><span class="line">info message</span><br><span class="line">warn message</span><br><span class="line">error message</span><br><span class="line">critical message</span><br></pre></td></tr></table></figure>
+
+<p>至此, 我们已经可以实现上一节末尾期望的功能, 但是还可以再完善一下. 比如每次打印日志的时候自动把时间日志级别等信息加上. 这个功能可以通过<code>Formatter</code>实现.</p>
+<p>我们需要新建一个<code>formatter</code>, 然后将其和某个<code>handler</code>绑定起来, 之后这个<code>handler</code>的所有输出都会使用这个<code>formatter</code>进行格式化了. 比如我们给终端打印的<code>handler</code>添加一个<code>formatter</code>, 让其在每次打印日志时带上时间和级别信息. 将如下代码添加到之前程序对应部分.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># create formatter</span></span><br><span class="line">formatter = logging.Formatter(<span class="string">&#x27;%(asctime)s - %(levelname)s - %(message)s&#x27;</span>)</span><br><span class="line"><span class="comment"># add formatter to ch</span></span><br><span class="line">ch.setFormatter(formatter)</span><br></pre></td></tr></table></figure>
+
+<p>再次执行可以看到终端输出变成这样了:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2020-12-15 20:42:29,329 - __main__ - INFO - info message</span><br><span class="line">2020-12-15 20:42:29,329 - __main__ - WARNING - warn message</span><br><span class="line">2020-12-15 20:42:29,330 - __main__ - ERROR - error message</span><br><span class="line">2020-12-15 20:42:29,331 - __main__ - CRITICAL - critical message</span><br></pre></td></tr></table></figure>
+
+<p>而<code>tmp.log</code>文件中的日志并没有变化.</p>
+<p>如果基于<code>logger</code>和<code>handler</code>的<code>loglevel</code>的过滤方法还无法满足需求的时候, 就可以使用<code>fileter</code>来实现更加精细的过滤控制. 因为这个功能我也不熟悉, 所以也不敢胡说, 建议参考官方文档[2].</p>
+<h2 id="2-3-colorful-log"><a href="#2-3-colorful-log" class="headerlink" title="2.3. colorful log!"></a>2.3. colorful log!</h2><p>日志一多, 放眼望去白花花一大片. 想要定位到自己想要的信息就比较费力. 如果我们可以让不同级别的信息使用不同的颜色打印, 就可以提高定位到目标日志的效率.</p>
+<p>这儿推荐<code>colorlog</code>库[3], 可以和<code>logging</code>库配合使用. 可以使用<code>pip</code>安装 <code>pip install colorlog</code>. 安装好之后在使用<code>colorlog</code>库提供的<code>formatter</code>. 其中有一个<code>log_color</code>字段, 可以用来给日志添加颜色. <code>colorlog</code>库还支持自定义各个<code>loglevel</code>的颜色(通过<code>log_colors</code>参数)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">import logging</span><br><span class="line">import colorlog</span><br><span class="line"></span><br><span class="line"># create logger</span><br><span class="line">logger &#x3D; logging.getLogger(__name__)</span><br><span class="line">logger.setLevel(logging.DEBUG)</span><br><span class="line"></span><br><span class="line"># create console handler and set level to debug</span><br><span class="line">ch &#x3D; logging.StreamHandler()</span><br><span class="line">ch.setLevel(logging.INFO)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">fh &#x3D; logging.FileHandler(&quot;tmp.log&quot;)</span><br><span class="line">fh.setLevel(logging.DEBUG)</span><br><span class="line"></span><br><span class="line"># create formatter</span><br><span class="line">formatter &#x3D; colorlog.ColoredFormatter(&#39;%(log_color)s%(asctime)s - %(levelname)s - %(message)s&#39;,log_colors&#x3D;&#123;</span><br><span class="line">		&#39;DEBUG&#39;:    &#39;cyan&#39;,</span><br><span class="line">		&#39;INFO&#39;:     &#39;green&#39;,</span><br><span class="line">		&#39;WARNING&#39;:  &#39;yellow&#39;,</span><br><span class="line">		&#39;ERROR&#39;:    &#39;red&#39;,</span><br><span class="line">		&#39;CRITICAL&#39;: &#39;red,bg_white&#39;,</span><br><span class="line">	&#125;,)</span><br><span class="line"># add formatter to ch</span><br><span class="line">ch.setFormatter(formatter)</span><br><span class="line"></span><br><span class="line"># add ch to logger</span><br><span class="line">logger.addHandler(ch)</span><br><span class="line">logger.addHandler(fh)</span><br><span class="line"></span><br><span class="line"># &#39;application&#39; code</span><br><span class="line">logger.debug(&#39;debug message&#39;)</span><br><span class="line">logger.info(&#39;info message&#39;)</span><br><span class="line">logger.warning(&#39;warn message&#39;)</span><br><span class="line">logger.error(&#39;error message&#39;)</span><br><span class="line">logger.critical(&#39;critical message&#39;)</span><br></pre></td></tr></table></figure>
+
+<p>执行上面的代码, 就可以在终端上看到各种颜色的日志了</p>
+<h1 id="3-结语"><a href="#3-结语" class="headerlink" title="3. 结语"></a>3. 结语</h1><p><del>print调试大法好</del></p>
+<p>log调试大法好</p>
+<p>233</p>
+<h1 id="4-参考"><a href="#4-参考" class="headerlink" title="4. 参考"></a>4. 参考</h1><ol>
+<li><p><a target="_blank" rel="noopener" href="https://docs.python.org/3/howto/logging.html">Logging HOWTO – Python</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://docs.python.org/3/library/logging.html#logging.Filter">Filter Objects – logging库官方文档</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/borntyping/python-colorlog">python-colorlog – github</a></p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/log/" rel="tag"># log</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/12/14/13-Python%E4%B8%AD%E7%9A%84Assignment-Expression/" rel="prev" title="Python中的Assignment Expression">
+                  <i class="fa fa-chevron-left"></i> Python中的Assignment Expression
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/12/26/hxp2020-audited/" rel="next" title="hxp2020-audited">
+                  hxp2020-audited <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wxk1997</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"pullp","repo":"pullp.github.io","client_id":"fe859336a9fbdeb3f2dc","client_secret":"10b651022b6a16968955aa45ac4537b2d97686de","admin_user":"pullp","distraction_free_mode":true,"language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"b981d9b4d304e52ad310c8b171d1ab2b"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"pullp.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.7.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="才发现gdb有commands这个东西, 学习记录一下">
+<meta property="og:type" content="article">
+<meta property="og:title" content="gdb 自动化操作">
+<meta property="og:url" content="https://pullp.github.io/2020/09/05/7-gdb-commands/index.html">
+<meta property="og:site_name" content="wxk1997&#39;s blog">
+<meta property="og:description" content="才发现gdb有commands这个东西, 学习记录一下">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-09-04T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-08-27T08:21:06.371Z">
+<meta property="article:author" content="wxk1997">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="gdb">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://pullp.github.io/2020/09/05/7-gdb-commands/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://pullp.github.io/2020/09/05/7-gdb-commands/","path":"2020/09/05/7-gdb-commands/","title":"gdb 自动化操作"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>gdb 自动化操作 | wxk1997's blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">wxk1997's blog</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">learn and share</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+        <li class="menu-item menu-item-friends"><a href="/friends/" rel="section"><i class="fa fa-archive fa-fw"></i>friends</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AD%A3%E6%96%87"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">3.</span> <span class="nav-text">结语</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wxk1997"
+      src="https://avatars0.githubusercontent.com/u/20255635">
+  <p class="site-author-name" itemprop="name">wxk1997</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pullp" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pullp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:weixiankui1997@gmail.com" title="E-Mail → mailto:weixiankui1997@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pullp.github.io/2020/09/05/7-gdb-commands/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/20255635">
+      <meta itemprop="name" content="wxk1997">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wxk1997's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          gdb 自动化操作
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-09-05 00:00:00" itemprop="dateCreated datePublished" datetime="2020-09-05T00:00:00+08:00">2020-09-05</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-08-27 16:21:06" itemprop="dateModified" datetime="2021-08-27T16:21:06+08:00">2021-08-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在做强网杯的一道vmpwn的时候, 有了这样一种需求.</p>
+<blockquote>
+<p>gdb可不可以实现这样一种功能: 在某处下个断点,  然后让程序运行到这个地方自动将当前的寄存器值保存到某个文件中然后继续执行. 最后得到一个包含执行过程中每次到达这个位置的时候的寄存器的值的文件</p>
+</blockquote>
+<p>据我所知ollydbg是有这种功能的. 可以在每次断点处执行一个脚本. 在脚本中可以通过一些指令将寄存器中的内容保存到文件中并继续执行, 直到下次遇到这个断点或者程序退出.</p>
+<p>经过搜索, 发现gdb提供了一个commands命令[2], 可以实现类似的功能. 在此记录一下.</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们以这份代码为例, 我们希望得到每次循环中val的值.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> val = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;<span class="number">100</span>; i++)&#123;</span><br><span class="line">        val = (<span class="number">7</span> * (val + <span class="number">1</span>) / <span class="number">3</span>) &amp; <span class="number">0xffff</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>源码编译得到二进制文件中main函数反汇编结果如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">00000000004004d6 &lt;main&gt;:</span><br><span class="line">  4004d6: push   rbp</span><br><span class="line">  4004d7: mov    rbp,rsp</span><br><span class="line">  4004da: mov    DWORD PTR [rbp-0x8],0x1</span><br><span class="line">  4004e1: mov    DWORD PTR [rbp-0x4],0x0</span><br><span class="line">  4004e8: jmp    400517 &lt;main+0x41&gt;</span><br><span class="line">  4004ea: mov    eax,DWORD PTR [rbp-0x8]</span><br><span class="line">  4004ed: lea    edx,[rax+0x1]</span><br><span class="line">  4004f0: mov    eax,edx</span><br><span class="line">  4004f2: shl    eax,0x3</span><br><span class="line">  4004f5: sub    eax,edx</span><br><span class="line">  4004f7: mov    ecx,eax</span><br><span class="line">  4004f9: mov    edx,0x55555556</span><br><span class="line">  4004fe: mov    eax,ecx</span><br><span class="line">  400500: imul   edx</span><br><span class="line">  400502: mov    eax,ecx</span><br><span class="line">  400504: sar    eax,0x1f</span><br><span class="line">  400507: sub    edx,eax</span><br><span class="line">  400509: mov    eax,edx</span><br><span class="line">  40050b: and    eax,0xffff</span><br><span class="line">  400510: mov    DWORD PTR [rbp-0x8],eax</span><br><span class="line">  400513: add    DWORD PTR [rbp-0x4],0x1</span><br><span class="line">  400517: cmp    DWORD PTR [rbp-0x4],0x63</span><br><span class="line">  40051b: jle    4004ea &lt;main+0x14&gt;</span><br><span class="line">  40051d: mov    eax,0x0</span><br><span class="line">  400522: pop    rbp</span><br><span class="line">  400523: ret</span><br></pre></td></tr></table></figure>
+
+<p>可以看到在 <code>0x400510</code> 处将计算得到的 <code>val</code> 从 <code>rax</code> 寄存器中存储到了栈上 <code>rbp-0x08</code>地址处.</p>
+<p>那么我们就可以写以下gdb脚本 <code>dump.gs</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">b *0x400510</span><br><span class="line">commands</span><br><span class="line">silent</span><br><span class="line">printf &quot;val is %#x\n&quot;, $rax</span><br><span class="line">c</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<p>然后在调试的时候加载这个脚本并直接<code>run</code>即可</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@vm$ gdb ./<span class="built_in">test</span></span><br><span class="line">(gdb) <span class="built_in">source</span> ./dump.gs</span><br><span class="line">Breakpoint 1 at 0x400510: file test.c, line 9.</span><br><span class="line">(gdb) run</span><br></pre></td></tr></table></figure>
+
+<p>就可以打印出每次循环时val的值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(gdb) run</span><br><span class="line">val is 0x4</span><br><span class="line">val is 0xb</span><br><span class="line">val is 0x1c</span><br><span class="line">val is 0x43</span><br><span class="line">val is 0x9e</span><br><span class="line">val is 0x173</span><br><span class="line">val is 0x364</span><br><span class="line">val is 0x7eb</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>现在可以将val的值打印到终端了. 那么如何将这些信息保存到文件中呢? 在 <code>run</code> 之前执行如下命令即可[3]</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set logging on</span><br></pre></td></tr></table></figure>
+
+<p>再次run之后就可以看到当前目录下多了一个 <code>gdb.txt</code>. 里面就是打印的内容.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">➜  <span class="built_in">local</span> git:(master) ✗ cat ./gdb.txt</span><br><span class="line">Starting program: ...</span><br><span class="line">warning:...</span><br><span class="line">warning: ...</span><br><span class="line"></span><br><span class="line">val is 0x4</span><br><span class="line">val is 0xb</span><br><span class="line">val is 0x1c</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>目前位置虽然可以满足一开始的需求了, 但是每次操作的时候还是感觉很麻烦, 不过做题的时候时间原因到这儿就没有继续深究了. 现在有空了再看看有没有什么更加高效优雅的解决方案.</p>
+<p>这个时候自然就想到万能的<code>python</code>了. 通过对官方文档[4]的简单阅读, 最终得到如下脚本. 可以将每次循环的值写入文件.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># dump.py</span></span><br><span class="line">gdb.execute(<span class="string">&quot;b *0x400510&quot;</span>)</span><br><span class="line">gdb.execute(<span class="string">&quot;start&quot;</span>)</span><br><span class="line">vals = []</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>):</span><br><span class="line">    gdb.execute(<span class="string">&quot;continue&quot;</span>)</span><br><span class="line">    vals.append(<span class="built_in">str</span>(<span class="built_in">int</span>(gdb.parse_and_eval(<span class="string">&quot;$rax&quot;</span>))))</span><br><span class="line"></span><br><span class="line"><span class="built_in">open</span>(<span class="string">&quot;./vals&quot;</span>, <span class="string">&quot;w&quot;</span>).write(<span class="string">&quot;\n&quot;</span>.join(vals))</span><br><span class="line">````</span><br><span class="line"></span><br><span class="line">直接执行如下命令</span><br><span class="line"></span><br><span class="line">```bash</span><br><span class="line">gdb ./test -x ./dump.py</span><br></pre></td></tr></table></figure>
+
+<p>就可以得到一个包含了100次循环中<code>val</code>值的文件<code>./vals</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">➜  <span class="built_in">local</span> git:(master) ✗ cat ./vals</span><br><span class="line">4</span><br><span class="line">11</span><br><span class="line">28</span><br><span class="line">67</span><br><span class="line">158</span><br><span class="line">371</span><br><span class="line">868</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>常言道 <code>人生苦短, 我用python</code>, 诚不我欺. python灵活的语法以及强大的兼容性使得python在这类写脚本的场景中十分好用. 大多数时候都可以替代<code>shell脚本</code>了. 有时我甚至会想将来会不会又某个shell内置python的那一天. 自此 <code>shell 脚本</code>是路人.</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/13935443/gdb-scripting-execute-commands-at-selected-breakpoint">so上有人提了和我类似的需求</a></li>
+<li><a target="_blank" rel="noopener" href="https://sourceware.org/gdb/onlinedocs/gdb/Break-Commands.html">commands 官方文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/5941158/gdb-print-to-file-instead-of-stdout">如何将gdb的输出保存到文件</a></li>
+<li><a target="_blank" rel="noopener" href="https://sourceware.org/gdb/current/onlinedocs/gdb/Python.html#Python">Extending GDB using Python</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/python/" rel="tag"># python</a>
+              <a href="/tags/gdb/" rel="tag"># gdb</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/19/6-ssctf-pwn-wp/" rel="prev" title="2020 ssctf(Hacker's Playground) wp">
+                  <i class="fa fa-chevron-left"></i> 2020 ssctf(Hacker's Playground) wp
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/09/13/8-ssh-tips/" rel="next" title="ssh tips">
+                  ssh tips <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wxk1997</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"pullp","repo":"pullp.github.io","client_id":"fe859336a9fbdeb3f2dc","client_secret":"10b651022b6a16968955aa45ac4537b2d97686de","admin_user":"pullp","distraction_free_mode":true,"language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"cc78f04e06e7ce63a32ff0508fad10c7"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>
